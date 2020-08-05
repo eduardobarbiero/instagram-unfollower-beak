@@ -13,12 +13,14 @@ from webdriver_manager.firefox import GeckoDriverManager
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
 
+instagram_website = 'https://www.instagram.com/accounts/login'
+firefox_binary_path = '/usr/bin/firefox'
 
 class Firefox(object):
     firefox = None
 
-    def setUp(self, headless, firefox_binary_path):
-
+    def setup(self, headless, username, password):
+        print('[{}] Starting really unfollow'.format(datetime.utcnow()))
         options = Options()
         options.headless = headless
         options.binary = firefox_binary_path
@@ -30,14 +32,18 @@ class Firefox(object):
         self.firefox = webdriver.Firefox(firefox_options=options, capabilities=firefox_capabilities,
                                          firefox_binary=firefox_binary, executable_path=GeckoDriverManager().install())
 
-    def openWebsite(self, website):
+        self.open_website(instagram_website)
+        self.make_login(username, password)
+        self.disable_notifiers()
+
+    def open_website(self, website):
         self.firefox.get(website)
 
         print('[{}] Openning Instagram: {}'.format(datetime.utcnow(), website))
 
         time.sleep(5)
 
-    def makeLogin(self, username, password):
+    def make_login(self, username, password):
         self.firefox.find_element_by_name("username").send_keys(username)
         self.firefox.find_element_by_name("password").send_keys(password)
         self.firefox.find_element_by_name("password").send_keys(u'\ue007')
@@ -46,7 +52,7 @@ class Firefox(object):
 
         time.sleep(7)
 
-    def disableNotifiers(self):
+    def disable_notifiers(self):
         self.firefox.find_element_by_xpath(
             "//*[contains(text(), 'Not Now')]").send_keys(u'\ue007')
 
@@ -59,23 +65,13 @@ class Firefox(object):
 
         time.sleep(2)
 
-    def loadProfilesToUnfollow(self, file_location_to_unfollow):
-        i_will_unfollow_list = []
-
-        with open(file_location_to_unfollow, 'r') as f:
-            i_will_unfollow_list = json.load(f)
-            print('[{}] List of not followers has been loaded'.format(
-                datetime.utcnow()))
-
-        return i_will_unfollow_list
-
-    def unfollowList(self, i_will_unfollow_list):
+    def start_unfollow(self, i_will_unfollow_list):
         unfollowed = 0
         for profile in i_will_unfollow_list:
             if unfollowed >= 30:
                 print('[{}] STOPPING UNFOLLOW. START AGAIN AFTER 60 MINUTES TO PREVENT BLOCK ACCOUNT'.format(
                     datetime.utcnow()))
-                self.closeWebsite()
+                self.close_website()
                 sys.exit()
 
             self.unfollow(profile)
@@ -127,5 +123,5 @@ class Firefox(object):
         print('---------------------------------------------------------------')
         time.sleep(2 + randrange(10))
 
-    def closeWebsite(self):
+    def close_website(self):
         self.firefox.quit()
