@@ -115,6 +115,7 @@ class Firefox(object):
             datetime.utcnow(), profile['username']))
         time.sleep(3 + randrange(2))
 
+        # apply unfollow
         self.firefox.find_element_by_xpath(
             "//button[contains(text(), 'Unfollow')]").send_keys(u'\ue007')
 
