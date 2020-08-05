@@ -1,3 +1,4 @@
+import sys
 import json
 import re
 import time
@@ -41,7 +42,7 @@ class Firefox(object):
 
     print('[{}] Login successfull: {}'.format(datetime.utcnow(), username))
 
-    time.sleep(10)
+    time.sleep(7)
 
   def disableNotifiers(self):
     self.firefox.find_element_by_xpath("//*[contains(text(), 'Not Now')]").send_keys(u'\ue007')
@@ -52,7 +53,7 @@ class Firefox(object):
 
     print('[{}] Disabling after-login features'.format(datetime.utcnow()))
 
-    time.sleep(10)
+    time.sleep(2)
 
   def loadProfilesToUnfollow(self, file_location_to_unfollow):
     i_will_unfollow_list = []
@@ -66,11 +67,10 @@ class Firefox(object):
   def unfollowList(self, i_will_unfollow_list):
     unfollowed = 0
     for profile in i_will_unfollow_list:
-      if unfollowed >= 15:
-        print('[{}] STOPPING UNFOLLOW FOR 15 MINUTES'.format(datetime.utcnow()))
-        time.sleep(900)
-        print('[{}] CONTINUING UNFOLLOW PROCESS'.format(datetime.utcnow()))
-        unfollowed = 0
+      if unfollowed >= 30:
+        print('[{}] STOPPING UNFOLLOW. START AGAIN AFTER 60 MINUTES TO PREVENT BLOCK ACCOUNT'.format(datetime.utcnow()))
+        self.closeWebsite()
+        sys.exit()
 
       self.unfollow(profile)
       unfollowed += 1
@@ -89,7 +89,7 @@ class Firefox(object):
     find_profile.send_keys(u'\ue007')
 
     print('[{}] Profile located: {}'.format(datetime.utcnow(), profile['username']))
-    time.sleep(10 + randrange(7))
+    time.sleep(5 + randrange(7))
 
     # enter inside profile
     self.firefox.find_element_by_xpath('//a[@href=\'/{}/\']'.format(profile['username'])).send_keys(u'\ue007')
@@ -103,13 +103,13 @@ class Firefox(object):
     following_button1.find_element_by_xpath('..').send_keys(u'\ue007')
 
     print('[{}] Clicked to stopped following: {}'.format(datetime.utcnow(), profile['username']))
-    time.sleep(6 + randrange(2))
+    time.sleep(3 + randrange(2))
 
     self.firefox.find_element_by_xpath("//button[contains(text(), 'Unfollow')]").send_keys(u'\ue007')
 
     print('[{}] Finish unfollow with success: {}'.format(datetime.utcnow(), profile['username']))
     print('---------------------------------------------------------------')
-    time.sleep(5 + randrange(10))
+    time.sleep(2 + randrange(10))
 
   def closeWebsite(self):
     self.firefox.quit()
